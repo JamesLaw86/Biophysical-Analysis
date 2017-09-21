@@ -8,9 +8,11 @@ y_axis (Independent variable).
 """
 
 import numpy as np
+import scipy.signal
         
 #Test Data. A Circular Dichroism Spectrum form the PCDDB
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
     with open('Rhomboid protease glpG.csv') as csvFile:
         data = csvFile.readlines()
         xdim_test = data[1].split(',')
@@ -84,7 +86,6 @@ def thinData(y_data, x_axis, reductionFactor = 2, startIndex = 0):
     return y_data, x_axis
 
 
-
 def baryCentricMean(y_data, x_axis):
     """Caluculates the "centre of intensity" (simlar to centre of mass 
        of a spectrum with respect to the x_axis"""
@@ -94,17 +95,25 @@ def baryCentricMean(y_data, x_axis):
     bcm = num/den
     return bcm
        
-def smooth(y_data, x_axis, window = 7):
-    #TODO
-    """Apply"""
+def smooth(y_data, window = 7, polyorder= 3):
+    """
+    Just uses the savitsy golay algorithm in scipy.signal!
+    """
+    return scipy.signal.savgol_filter(y_data, window, polyorder)
+
     
-def firstDerivative(y_data, x_axis):
-    #TODO
-    pass
+def firstDerivative(y_data, x_axis, window = 7, polyorder= 3):
+    """
+    Just uses the savitsy golay algorithm in scipy.signal!
+    """
+    return scipy.signal.savgol_filter(y_data, window, polyorder, deriv = 1)
     
-def secondDerivative(y_data, x_axis):
-    #TODO
-    pass
+def secondDerivative(y_data, window = 7, polyorder= 3):
+    """
+    Just uses the savitsy golay algorithm in scipy.signal!
+    """
+    return scipy.signal.savgol_filter(y_data, window, polyorder, deriv = 2)
+
 
 def Ratio(y_data):
     """Calculates the ratio of potive to negative values of a spectrum
