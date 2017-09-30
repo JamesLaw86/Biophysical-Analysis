@@ -19,24 +19,32 @@ if __name__ == "__main__":
 
 
 class NormaliseTestCase(unittest.TestCase):
-    """Test case for normalisation"""
+    """Test case for normalisation. Ensure normalised data sums to 1"""
     def test_Normalise(self):
         normalised = data_process.normaliseArea(y_test)
         self.assertAlmostEqual(np.sum(np.abs(normalised)), 1)
 
 class SetDataRangeTestCase(unittest.TestCase):
-    """Test case for setting data range"""
+    """
+    Test case for setting data range.
+    """
     def setUp(self):
+        """Range to cut data"""
         self.upper = 230.0
         self.lower = 195.0
         
     def test_SetDataRangeSingleArray(self):
+        """
+        Ensure new wavelegnth range is correct and that new y_data has the 
+        same length.
+        """
         y_data, x_dim = data_process.setDataRange(y_test, xdim_test,
                                                   self.upper, self.lower)
         self.assertTrue(x_dim[-1] == self.lower and x_dim[0] == self.upper)
         self.assertTrue(len(y_data) == len(x_dim))
     
     def test_SetDataRangeMultiArray(self):
+        """As above for multiple arrays of data.""" 
         y_multiData, x_dim = data_process.setDataRange(y_testMultiple, xdim_test, 
                                                        self.upper, self.lower)
         self.assertTrue(x_dim[-1] == self.lower and x_dim[0] == self.upper)
@@ -44,11 +52,16 @@ class SetDataRangeTestCase(unittest.TestCase):
             self.assertTrue(len(spectrum) == len(x_dim))
 
 class thinDataTest(unittest.TestCase):
-    """Test case for thinning data"""
+    """Test case for data thinning."""
     def setUp(self):
-        self.splits = (2,3,4)
+       """Factors by which to reduce data step."""
+       self.splits = (2,3,4)
         
     def test_ThinData(self):
+        """
+        Checks the wavelegth step is reduced by appropriate factor and
+        new y_data has the same length as the new x_axis.
+        """
         for split in self.splits:
             y_data, x_data = data_process.thinData(y_test, xdim_test, split)
             oldStep = float(xdim_test[1]) - float(xdim_test[0])
@@ -57,6 +70,7 @@ class thinDataTest(unittest.TestCase):
             self.assertTrue(len(y_data) == len(x_data))
             
     def test_ThinDataMultiArray(self):
+        """As above for multiple arrays of data."""
         for split in self.splits:
             y_data, x_data = data_process.thinData(y_testMultiple, xdim_test, split)
             for spec in y_data:
@@ -75,7 +89,6 @@ class barycentricMeanTest(unittest.TestCase):
     def test_BarycentricMean(self):
         bcm = data_process.baryCentricMean(self.sin_wave, self.array)
         self.assertAlmostEqual(bcm, np.pi/2)
-
 
 
 if __name__ == '__main__':
