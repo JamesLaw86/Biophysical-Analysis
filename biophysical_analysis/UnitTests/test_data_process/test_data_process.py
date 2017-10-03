@@ -5,7 +5,11 @@ Unit tests for data_process.py
 """
 import unittest
 import numpy as np
-import data_process
+import sys
+
+if __name__ == '__main__':
+    sys.path.append('.../')
+from DataProcessing import data_process
 
 
 """Test Data. A Circular Dichroism Spectrum form the PCDDB. Molecule 

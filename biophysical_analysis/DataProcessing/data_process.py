@@ -123,14 +123,16 @@ def Ratio(y_data):
     y_data = np.array(y_data, dtype = float)
     pos = np.sum(y_data[y_data > 0])
     neg = np.sum(y_data[y_data < 0])
-    return pos/neg 
+    return pos/neg
 
 
 def blend(spec1, spec2, n = 18):
-    """Performs a linear combination of two spectra such that we go from
-       100% of spec1 (0% spec2), to 100% spec2 (0% spec1) in 'n' steps. 
-       Returns a dictionary of spectra with keys being the fraction of
-       spec2. Will return n+2 spectra, i.e. includes spec1 and spec2!"""
+    """
+    Performs a linear combination of two spectra such that we go from
+    100% of spec1 (0% spec2), to 100% spec2 (0% spec1) in 'n' steps. 
+    Returns a dictionary of spectra with keys being the fraction of
+    spec2. Will return n+2 spectra, i.e. includes spec1 and spec2!
+    """
     spec1, spec2 = makeArrays([spec1, spec2], dtype = float)
     blended = {0 : spec1, 1 : spec2}
     increment = 1 / (n + 1)
