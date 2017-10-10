@@ -29,7 +29,7 @@ def makeArrays(y_data, dtype = None):
     return arrays
 
 
-def normaliseArea(y_data):
+def normaliseArea(y_data, area = 1):
     """
     Normalises to the absolute area under the curve. I.e. makes all
        values postive and divides by their total sum.

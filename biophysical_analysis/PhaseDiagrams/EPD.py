@@ -8,7 +8,8 @@ Journal of Pharmaceutical Sciences, 100(10), 4171–4197. https://doi.org/10.100
 """
 
 import sys
-sys.path.append('../')
+if __name__ == '__main__':
+    sys.path.append('../')
 from DataProcessing import data_process
 import matplotlib.pyplot as plt
 import numpy as np

@@ -6,10 +6,15 @@ Unit tests for data_process.py
 import unittest
 import numpy as np
 import sys
+import os
 
+path = os.getcwd()
 if __name__ == '__main__':
-    sys.path.append('.../')
+    newPath = path.split('UnitTests')[0]
+    os.chdir(path)
 from DataProcessing import data_process
+
+os.chdir(path)
 
 
 """Test Data. A Circular Dichroism Spectrum form the PCDDB. Molecule 
