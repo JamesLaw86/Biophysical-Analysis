@@ -76,6 +76,6 @@ class JCampReader(object):
                 i += 1
         return listOfLists   
 
-jcamp = JCampReader('jcampTest.jdx')
+#jcamp = JCampReader('jcampTest.jdx')
 
 

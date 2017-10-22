@@ -42,7 +42,6 @@ class csvSpecReader(object):
     
     def __readData(self, csvReader, y_Spectra, x_orientation):
         """A delegator function"""
-        
         if x_orientation == 'Horizontal':
             self.__readDataH(csvReader, y_Spectra)
 
@@ -60,30 +59,29 @@ class csvSpecReader(object):
         
         """
         bFoundData = False
-        i = 1
         for row in csvReader:
             if not bFoundData:
-                if row[0] != 'Data' and row[0] != '': #Not reached start Point of data
-                    setting = row[0]
-                    value = row[1]
-                    self.remarks[setting] = value
-                else:
-                    bFoundData = True
-                    self.xy_data.append(row[1::])
-                    if 'XUNITS' in self.remarks:
-                        x_axis = self.remarks['XUNITS']
-                    else:
-                        x_axis = 'x_axis'
-                    self.xy_dataDict[x_axis] = row[1::]
-            else:
-                if rows[0] == -1 or i in rows:
-                    name = row[0]
-                    data = row[1::]
-                    self.xy_dataDict[name] = data
-                    self.xy_data.append(data)
-                i += 1
+                bFoundData = self.__readRemark(row)
+                if bFoundData:
+                    break
         if not bFoundData:
             raise ValueError('Data start line not found in csv file')
+        self.xy_data.append(row[1::])
+        if 'XUNITS' in self.remarks:
+            x_axis = self.remarks['XUNITS']
+        else:
+            x_axis = 'x_axis'
+        self.xy_dataDict[x_axis] = row[1::]
+        dataRowNum = 1   #Row counter, start at 1
+        for row in csvReader:
+            if rows[0] == -1 or dataRowNum in rows:
+                name = row[0]
+                data = row[1::]
+                if name == '':
+                    name = str(dataRowNum)
+                self.xy_dataDict[name] = data
+                self.xy_data.append(data)
+            dataRowNum += 1
         return
 
     def __readDataV(self, csvReader, columns):
@@ -95,40 +93,63 @@ class csvSpecReader(object):
         bFoundData = False
         for row in csvReader:
             if not bFoundData:
-                if row[0] != 'Data' and row[0] != '': #Not yet reached start Point of data
-                    setting = row[0]
-                    value = row[1]
-                    self.remarks[setting] = value
-                else:
-                    bFoundData = True
-                    if 'XUNITS' in self.remarks:
-                        x_units = self.remarks['XUNITS']
-                    else:
-                        x_units = 'x_axis'
-                    if columns[0] == -1: #ALL columns! 
-                        listSize = len(row)
-                        self.xy_dataDict = {name:[] for name in row[1::]}
-                        lookUp = {i : row[i] for i in range(listSize)}
-                    else:
-                        listSize = len(columns) + 1
-                        self.xy_dataDict = {row[i]:[] for i in columns}
-                        lookUp = {col : row[col] for col in columns }
-                    lookUp[0] = x_units
-                    self.xy_data = [[] for i in range(listSize)]
-                    self.xy_dataDict[x_units] = []
-            else:
-                #Read in the x-y data!!
-                j = 0
-                for col in sorted(lookUp):
-                    self.xy_data[j].append(row[col])
-                    self.xy_dataDict[lookUp[col]].append(row[col])
-                    j += 1
+                bFoundData = self.__readRemark(row)
+                if bFoundData:
+                    break
         if not bFoundData:
             raise ValueError('Data start line not found in csv file')
         
+        if 'XUNITS' in self.remarks:
+            x_units = self.remarks['XUNITS']
+        else:
+            x_units = 'x_axis'
+        
+        if columns[0] == -1: #ALL columns! 
+            listSize = len(row)
+            self.xy_dataDict = {name:[] for name in row[1::]}
+            lookUp = {i : row[i] for i in range(listSize)}
+        else:
+            listSize = len(columns) + 1        
+            try:
+                self.xy_dataDict = {row[i]:[] for i in columns}
+                lookUp = {col : row[col] for col in columns }
+            except IndexError:
+                print('Warning no column names found, using column nums.')
+                self.xy_dataDict = {i:[] for i in columns}
+                lookUp = {col : col for col in columns }
+        lookUp[0] = x_units
+        self.xy_data = [[] for i in range(listSize)]
+        self.xy_dataDict[x_units] = []
+        
+        self.__read_xy_dataV(csvReader, lookUp)
+    
+    
+    def __readRemark(self, row):
+        """Reads in remarks until data line is found"""
+        bFoundData = False
+        if row[0] != '' and 'ata' not in row[0]:  #ata = D/data'
+        #Not yet reached start Point of data
+           setting = row[0]
+           value = row[1]
+           self.remarks[setting] = value
+           return bFoundData
+        else:
+            bFoundData = True
+            return bFoundData
 
-csvTestH = csvSpecReader('HorizontalDataSet.csv', x_orientation = 'Horizontal')
+    def __read_xy_dataV(self, csvReader, lookUp):
+        """Reads in the xy data from the csv file"""
+        for row in csvReader:
+            j = 0
+            for col in sorted(lookUp):
+                self.xy_data[j].append(row[col])
+                self.xy_dataDict[lookUp[col]].append(row[col])
+                j += 1
+                
+        
 
-csvTestV = csvSpecReader('VerticalDataSet.csv','All', x_orientation = 'Vertical')
+#csvTestH = csvSpecReader('HorizontalDataSet.csv', x_orientation = 'Horizontal')
+
+#csvTestV = csvSpecReader('VerticalDataSet.csv','All', x_orientation = 'Vertical')
         
     

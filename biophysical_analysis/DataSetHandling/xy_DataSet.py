@@ -7,8 +7,8 @@ A class to hold an x-y spectrum
 import numpy as np
 import sys
 import re
-import JCamp_DataSet_Reader as JCampReader
-import CSV_Dataset_Reader as csvR
+from DataSetHandling import JCamp_DataSet_Reader as JCampReader
+from DataSetHandling import CSV_Dataset_Reader as csvR
 
 if __name__ == '__main__':
     sys.path.append('../')
@@ -36,9 +36,9 @@ class xy_dataSet(object):
         self.x_units, self.y_units = None, None
         self.remarks = {}
         self.Title = ""
-        self.__setInitialLabels(kwargs)
         self.modifications = {}
         self.results = {}
+        self.__setInitialLabels(kwargs)
     
     def __setInitialLabels(self, labels):
         """
@@ -99,7 +99,7 @@ class xy_dataSet(object):
         
     def addResult(self, resultKey, result):
         """
-        Adds result to self.results. For a given index, results are indexed in
+        Adds result to self.results. For a given resultKey, results are indexed in
         order they were added. 
         """
         if not resultKey in self.results:

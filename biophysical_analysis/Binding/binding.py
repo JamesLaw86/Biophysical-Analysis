@@ -4,12 +4,13 @@ Equations to fit binding curves. Equations are taken from:
 Pollard, T. D. (2010). A guide to simple and informative binding assays.
 Molecular Biology of the Cell, 21(23), 4061–7. https://doi.org/10.1091/mbc.E10-08-0683
 
+And from https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
+
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize
-#import DataSetHandling.xy_DataSet
 
 def bimolecularSimple(Bfree, Kd):
     """
@@ -32,7 +33,7 @@ def bimolecularHill(Bfree, Kd, n):
 def bimolecularQuadratic(B_total, A_total, Kd):
     """
     Quadratic binding equation for when [A] is in the same range as the 
-    Kd.
+    Kd. Can actually fit 
     """
     numerator1 = B_total + A_total + Kd
     numerator2 = np.sqrt((B_total + A_total + Kd )** 2 - 4 * B_total * A_total)
@@ -45,19 +46,49 @@ def fitExample1(x_axis, y_data, **kwargs):
     fit = scipy.optimize.curve_fit(bimolecularSimple, x_axis, y_data)
     return fit
 
-#Bfrees = np.linspace(0, 100e-6, 20)
-#ABs = bimolecularSimple(Bfrees, 10e-6)
-#noise = np.random.normal(ABs, .03)
-#plt.plot(ABs)
-#plt.plot(noise)
-#
-#quadTest = bimolecularQuadratic(Bfrees, 10e-8, 10e-6)
-#plt.plot(quadTest)
-#
-#
-#fit = fitExample1(Bfrees, noise)
-#print(fit)
-#
-#for n in np.linspace(1, 4, 10):
-#    ABs = bimolecularHill(Bfrees, 1e-6, n)
-#    #plt.plot(ABs)
+
+def __createTestDataBiSimp(Bstart = 0, Bstop = 100e-6, points = 20, Kd = 10e-6,
+                           noise = 0.03):
+    with open('Binding Dataset.csv', 'w') as csvFile:
+        Bfrees = np.linspace(Bstart, Bstop, points)
+        fracBound = bimolecularSimple(Bfrees, Kd)
+        noisy_ydata = np.random.normal(fracBound, noise)
+        csvFile.write('XUNITS,Concentration (M)\n')
+        csvFile.write('YUNITS,Fraction Bound\n')
+        csvFile.write('Data\n')
+        c = 0
+        for i in Bfrees:
+            csvFile.write(str(i) + ',' + str(noisy_ydata[c]) + '\n')
+            c += 1
+            
+def __createTestDataHill(Bstart = 0, Bstop = 300e-6, points = 20, 
+                         n = 2, Kd = 10e-9, noise = 0.03):
+    with open('Hill Dataset.csv', 'w') as csvFile:
+            Bfrees = np.linspace(Bstart, Bstop, points)
+            fracBound = bimolecularHill(Bfrees, Kd, n)
+            noisy_ydata = np.random.normal(fracBound, noise)
+            plt.plot(fracBound)
+            plt.plot(noisy_ydata)
+            c = 0
+            csvFile.write('Data\n')
+            for i in Bfrees:
+                csvFile.write(str(i) + ',' + str(noisy_ydata[c]) + '\n')
+                c += 1           
+
+def __createTestDataBiQuad(Bstart = 0, Bstop = 100e-6, Atot = 10e-6,
+                           points = 20, Kd = 10e-6, noise = 0.03):
+    with open('Binding Dataset Quadratic.csv', 'w') as csvFile:
+        Btots = np.linspace(Bstart, Bstop, points)
+        frac = bimolecularQuadratic(Btots ,Atot, Kd)
+        noisy_ydata = np.random.normal(frac, noise)
+        csvFile.write('Data\n')
+        c = 0
+        for i in Btots:
+            csvFile.write(str(i) + ',' + str(noisy_ydata[c]) + '\n')
+            c += 1
+
+
+if __name__ == '__main__':
+    __createTestDataBiSimp()
+    __createTestDataHill()
+    __createTestDataBiQuad()

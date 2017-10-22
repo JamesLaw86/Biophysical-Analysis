@@ -11,7 +11,7 @@ import os
 path = os.getcwd()
 if __name__ == '__main__':
     newPath = path.split('UnitTests')[0]
-    os.chdir(path)
+    os.chdir(path)#this doesn't work!!!
 from DataProcessing import data_process
 
 os.chdir(path)
