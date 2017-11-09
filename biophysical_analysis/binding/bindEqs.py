@@ -33,10 +33,10 @@ def bimolecularHill(Bfree, Kd, n):
 def bimolecularQuadratic(B_total, A_total, Kd):
     """
     Quadratic binding equation for when [A] is in the same range as the 
-    Kd. Can actually fit 
+    Kd. Holds true for all A concentrations but requires A_total
     """
     numerator1 = B_total + A_total + Kd
-    numerator2 = np.sqrt((B_total + A_total + Kd )** 2 - 4 * B_total * A_total)
+    numerator2 = np.sqrt((numerator1**2) - (4 * B_total * A_total))
     fracBound = (numerator1 - numerator2) / (2 * A_total) 
     return fracBound
 
@@ -53,6 +53,7 @@ def __createTestDataBiSimp(Bstart = 0, Bstop = 100e-6, points = 20, Kd = 10e-6,
         Bfrees = np.linspace(Bstart, Bstop, points)
         fracBound = bimolecularSimple(Bfrees, Kd)
         noisy_ydata = np.random.normal(fracBound, noise)
+        #csvFile.write('Actual Kd,10e-6\n')
         csvFile.write('XUNITS,Concentration (M)\n')
         csvFile.write('YUNITS,Fraction Bound\n')
         csvFile.write('Data\n')
@@ -61,7 +62,7 @@ def __createTestDataBiSimp(Bstart = 0, Bstop = 100e-6, points = 20, Kd = 10e-6,
             csvFile.write(str(i) + ',' + str(noisy_ydata[c]) + '\n')
             c += 1
             
-def __createTestDataHill(Bstart = 0, Bstop = 300e-6, points = 20, 
+def __createTestDataHill(Bstart = 1e-12, Bstop = 300e-6, points = 20, 
                          n = 2, Kd = 10e-9, noise = 0.03):
     with open('Hill Dataset.csv', 'w') as csvFile:
             Bfrees = np.linspace(Bstart, Bstop, points)
@@ -69,18 +70,26 @@ def __createTestDataHill(Bstart = 0, Bstop = 300e-6, points = 20,
             noisy_ydata = np.random.normal(fracBound, noise)
             plt.plot(fracBound)
             plt.plot(noisy_ydata)
-            c = 0
+            #csvFile.write('Actual Kd,10e-6\n')
+            #csvFile.write('Actual n,2\n')
+            csvFile.write('XUNITS,Concentration (M)\n')
+            csvFile.write('YUNITS,Fraction Bound\n')
             csvFile.write('Data\n')
+            c = 0
             for i in Bfrees:
                 csvFile.write(str(i) + ',' + str(noisy_ydata[c]) + '\n')
                 c += 1           
 
-def __createTestDataBiQuad(Bstart = 0, Bstop = 100e-6, Atot = 10e-6,
+def __createTestDataBiQuad(Bstart = 1e-12, Bstop = 100e-6, Atot = 10e-6,
                            points = 20, Kd = 10e-6, noise = 0.03):
     with open('Binding Dataset Quadratic.csv', 'w') as csvFile:
         Btots = np.linspace(Bstart, Bstop, points)
         frac = bimolecularQuadratic(Btots ,Atot, Kd)
         noisy_ydata = np.random.normal(frac, noise)
+        csvFile.write('XUNITS,Concentration (M)\n')
+        csvFile.write('YUNITS,Fraction Bound\n')
+        #csvFile.write('A_tot,10e-6\n')
+        #csvFile.write('Actual Kd,10e-6')
         csvFile.write('Data\n')
         c = 0
         for i in Btots:

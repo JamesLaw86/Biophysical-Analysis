@@ -15,7 +15,7 @@ if __name__ == '__main__':
     newPath = path.split('UnitTests')[0]
     sys.path.append(newPath)
     
-from Binding import titration_dataset
+from binding import titration_dataset
 
 class BimolSimpTestCase(unittest.TestCase):
     """Test the simple Bimolecular binding fitting function"""

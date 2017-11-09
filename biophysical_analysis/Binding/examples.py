@@ -7,12 +7,14 @@ Created on Mon Oct 16 13:06:21 2017
 import sys
 if __name__ == '__main__':
     sys.path.append('../')
-from Binding import titration_dataset
-from Binding import binding
-import matplotlib.pyplot as plt
+from binding.titration_dataset import Binding_Dataset
 
+biMolData = Binding_Dataset.setupCSV("Binding Dataset.csv")
+results = biMolData.fitBimolecularSimple(Kd_estimate = 10e-6, plot = True)
 
-BiMolData = titration_dataset.binding_dataset.setupCSV("Binding Dataset.csv")
+quadData = Binding_Dataset.setupCSV('Binding Dataset Quadratic.csv')
+results = quadData.fitBimolecularQuadratic(Kd_estimate = 10e-5,  A_tot =  10e-6,
+                                           plot = True)
 
-results = BiMolData.fitBimolecularSimple(Kd_estimate = 10e-6)
-fig = BiMolData.plotFit(results)
+HillData = Binding_Dataset.setupCSV('Hill Dataset.csv')
+results = HillData.fitHillEquation(Kd_estimate = 10e-5, n_estimate = 2, plot = True)

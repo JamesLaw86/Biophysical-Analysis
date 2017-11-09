@@ -8,28 +8,34 @@ import numpy as np
 
 """ Functions from the famous Beer Lambert (bl) Law A = ecl"""
 
-def blGetAbs(epsilon, conc, pathLength):
+def GetAbsBeer(epsilon, conc, pathLength):
+    """Returns absorbance from extinction coeff, concentration and pathlength"""
     return epsilon * conc * pathLength
 
-def blGetConc(Abs, epsilon, pathLength):
+def GetConcBeer(Abs, epsilon, pathLength):
+    """Returns concentration from absorbance, extinction coeff, and pathlength"""
     return Abs / (epsilon * pathLength)
 
-def blGetEpsilon(Abs, conc, pathLength):
+def GetEpsilonBeer(Abs, conc, pathLength):
+    """Returns extinction coeff from absorbacne, concentration and pathlength"""
     return Abs / (conc * pathLength)
 
 def TransFromAbs(Abs):
     """
-    Transmittence (percentage) from the absorbance value
+    Returns transmittence (percentage) from the absorbance value
     A = 2 - log(T)
     A - 2 = -log(T)
     10**-(A-2) = T
     """
     ans = Abs - 2
-    ans = 10 ** -ans
-    return ans
+    return 10 ** -ans
 
-def AbsorbFromTrans(Trans):
+def AbsFromTrans(Trans):
+    """Returns absorbance from a transmittence percentage"""
     return (2-np.log10(Trans))
+
+
+
 
 def EstimateEpsilon(seq):
     pass
