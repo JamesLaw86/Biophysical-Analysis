@@ -6,6 +6,7 @@ Works fine but really needs refactoring!!
 """
 
 import csv
+import re
 
 class csvSpecReader(object):
     """
@@ -20,26 +21,39 @@ class csvSpecReader(object):
     (1,4) will extract the 1st and 4th columns (or rows) of y_data. 
     
     """
-    def __init__(self, file, y_Spectra = 'All', x_orientation = 'Vertical'):
-        with open(file) as csvFile:
-            csvReader = csv.reader(csvFile)
-            self.remarks = {}
-            self.xy_data = []
-            self.xy_dataDict = {}
-            
-            #If y_Spectra is an integer, make this a list
-            #If y_Spectra is 'All' set it to a list containing -1
-            if type(y_Spectra) == int:
-                y_Spectra = [y_Spectra]
-            elif y_Spectra == 'All':
-                y_Spectra = [-1]
-            
-            try:
-                self.__readData(csvReader, y_Spectra, x_orientation)
-            except ValueError as e:
-                print(e)
-                print('Error reading in CSV file: ', file)
+    __counter_orientations = {'Vertical': 'Horizontal', 'Horizontal' :'Vertical'}
     
+    def __init__(self, file, y_Spectra = 'All', x_orientation = 'Vertical'):
+        
+        #If y_Spectra is an integer, make this a list. If y_Spectra is 'All' set it to a list containing -1
+        if type(y_Spectra) == int:
+            y_Spectra = [y_Spectra]
+        elif y_Spectra == 'All':
+            y_Spectra = [-1]
+        try:
+            with open(file) as csvFile:
+                self.__setup_containers()
+                csvReader = csv.reader(csvFile)
+                self.__readData(csvReader, y_Spectra, x_orientation)
+        #If this fails try reading the alternative orientation
+        except ValueError as e:
+            print(e)
+            error = 'Error reading in CSV file: ' + file + '\n\
+            Trying alternitive orientation'
+            print(error)
+            self.__setup_containers()
+            with open(file) as csvFile:
+                csvReader = csv.reader(csvFile)
+                self.__readData(csvReader, y_Spectra,
+                            csvSpecReader.__counter_orientations[x_orientation])
+            print('Orientation read in opposite orientation to what was specified')   
+    
+    def __setup_containers(self):
+        """Set/resets the dat containers"""
+        self.remarks = {}
+        self.xy_data = []
+        self.xy_dataDict = {}
+        
     def __readData(self, csvReader, y_Spectra, x_orientation):
         """A delegator function"""
         if x_orientation == 'Horizontal':
@@ -50,6 +64,9 @@ class csvSpecReader(object):
         else:
             raise ValueError('x_orientation keyword is neither\
                              "Horizontal" nor "Veritcal"')
+        
+        #This raises ValueError exception if x_axis is not numeric, a probable orientation mixup
+        float(self.xy_data[0][0]) 
         return
         
     def __readDataH(self, csvReader, rows):
@@ -127,7 +144,7 @@ class csvSpecReader(object):
     def __readRemark(self, row):
         """Reads in remarks until data line is found"""
         bFoundData = False
-        if row[0] != '' and 'ata' not in row[0]:  #ata = D/data'
+        if row[0] != '' and 'ata' not in row[0] and 'ATA' not in row:  #ata = D/data'
         #Not yet reached start Point of data
            setting = row[0]
            value = row[1]
@@ -148,8 +165,8 @@ class csvSpecReader(object):
                 
         
 
-#csvTestH = csvSpecReader('HorizontalDataSet.csv', x_orientation = 'Horizontal')
+#csvTestH = csvSpecReader('HorizontalBare.csv', x_orientation = 'Vertical')
 
-#csvTestV = csvSpecReader('VerticalDataSet.csv','All', x_orientation = 'Vertical')
+#csvTestV = csvSpecReader('VerticalDataSet.csv','All', x_orientation = 'Horizontal')# 'Vertical')
         
     

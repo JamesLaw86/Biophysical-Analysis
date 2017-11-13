@@ -13,7 +13,7 @@ import re
 if __name__ == '__main__':
     sys.path.append('../')
 from data_set_handling import xy_DataSet
-from kinetics import equations
+from kinetics import kin_equations as equations
 
 class Kinetic_Dataset(xy_DataSet.xy_dataSet):
     """
@@ -26,8 +26,8 @@ class Kinetic_Dataset(xy_DataSet.xy_dataSet):
         kwargs contain arguments to pass to scipy.optimisie.curvefit.
         Should we fit Ao????
         """
-        #if not Ao:
-        #    Ao = self.y_data[0]
+        if not Ao:
+            Ao = self.y_data[0]
         popt, pcov = scipy.optimize.curve_fit(equations.first_order,
                                               self.x_axis, self.y_data,
                                               [Ao, k_estimate], **kwargs)
@@ -40,4 +40,18 @@ class Kinetic_Dataset(xy_DataSet.xy_dataSet):
         if plot:
             self.plotFit(result)
         return result
+    
+first_order_ex = Kinetic_Dataset.setupCSV('First Order Ex.csv')
+
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
 

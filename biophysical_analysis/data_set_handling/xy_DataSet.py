@@ -155,7 +155,7 @@ class xy_dataSet(object):
         mod = {'window':window, 'polyorder':polyorder, 'Time':time.localtime()}
         self.modifications.setdefault('Smoothing', []).append(mod)
         
-    def derivative(self, n = 1, window = 7, polyorder):
+    def derivative(self, n = 1, window = 7, polyorder = 3):
         """
         Uses the savitsy golay algorithm in scipy.signal. Returns an array
         of the processed data.

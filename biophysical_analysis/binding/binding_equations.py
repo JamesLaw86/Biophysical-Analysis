@@ -47,6 +47,7 @@ def fitExample1(x_axis, y_data, **kwargs):
     return fit
 
 
+#Functions to create test data
 def __createTestDataBiSimp(Bstart = 0, Bstop = 100e-6, points = 20, Kd = 10e-6,
                            noise = 0.03):
     with open('Binding Dataset.csv', 'w') as csvFile:
