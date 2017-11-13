@@ -13,7 +13,7 @@ import re
 if __name__ == '__main__':
     sys.path.append('../')
 from data_set_handling import xy_DataSet
-from binding import bindEqs
+from binding import binding_equations as bindEqs
 
 
 
@@ -111,6 +111,7 @@ class Binding_Dataset(xy_DataSet.xy_dataSet):
             ax.legend()
             ax.set_xlabel(self.x_units)
         fig.tight_layout()
+        return fig
         
 
 if __name__ == '__main__':
