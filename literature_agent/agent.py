@@ -18,13 +18,14 @@ import anthropic
 
 import pubmed
 
-MODEL = "claude-opus-5"
-# USD per million tokens for MODEL; only used for the cost estimate at the end.
-INPUT_PRICE_PER_MTOK = 5.00
-OUTPUT_PRICE_PER_MTOK = 25.00
+MODEL = "claude-sonnet-5"
+# USD per million tokens for MODEL, used for the running cost and the budget check.
+INPUT_PRICE_PER_MTOK = 2.00
+OUTPUT_PRICE_PER_MTOK = 10.00
 
-MAX_TURNS = 20        # hard stop, so a confused model can't loop forever
-MAX_RESULTS_CAP = 20  # limits how many abstracts one tool call can pull into the context
+MAX_TURNS = 20         # hard stop, so a confused model can't loop forever
+MAX_RESULTS_CAP = 20   # limits how many abstracts one tool call can pull into the context
+MAX_COST_USD = 0.75    # stop searching once one question has cost this much
 
 SYSTEM_PROMPT = """You answer questions about biological targets using the PubMed literature.
 
@@ -104,6 +105,16 @@ def run_tool(name, tool_input, retrieved):
     raise ValueError(f"Unknown tool: {name}")
 
 
+def cost_usd(stats):
+    """Cost of this question so far, from the token counts the API reported.
+
+    One formula, shared by the budget check and the final report, so the number
+    the loop stops on is the number printed.
+    """
+    return (stats["input_tokens"] * INPUT_PRICE_PER_MTOK
+            + stats["output_tokens"] * OUTPUT_PRICE_PER_MTOK) / 1_000_000
+
+
 def send(client, messages, stats, tool_choice=None):
     """One API call, recording token usage in `stats` whatever the outcome."""
     extra = {"tool_choice": tool_choice} if tool_choice else {}
@@ -131,6 +142,21 @@ def answer_text(response):
     return "\n".join(block.text for block in response.content if block.type == "text").strip()
 
 
+def final_answer(client, messages, stats):
+    """Ask for an answer from the abstracts already fetched, with tools switched off.
+
+    Used when the turn cap or the cost budget is reached, so a long run still
+    produces something. This one call is allowed to exceed the budget: without it,
+    the money already spent buys nothing at all.
+    """
+    messages.append({
+        "role": "user",
+        "content": "You have run out of search turns. Answer the question now, using only the abstracts you have already fetched.",
+    })
+    response = send(client, messages, stats, tool_choice={"type": "none"})
+    return answer_text(response)
+
+
 def run_agent(question):
     """Run the tool-calling loop until Claude gives a final answer.
 
@@ -144,6 +170,11 @@ def run_agent(question):
     stats = {"turns": 0, "input_tokens": 0, "output_tokens": 0, "fallback_ran": False, "note": None}
 
     for _ in range(MAX_TURNS):
+        if cost_usd(stats) >= MAX_COST_USD:
+            stats["note"] = f"reached the ${MAX_COST_USD:.2f} budget; answered from the abstracts already fetched"
+            print(f"[${MAX_COST_USD:.2f} budget reached: asking for an answer from what has been fetched]")
+            return final_answer(client, messages, stats), retrieved, stats
+
         response = send(client, messages, stats)
 
         # Send back the full content, not just the text: tool_use and thinking
@@ -177,16 +208,10 @@ def run_agent(question):
         # All results in one message; splitting them discourages parallel tool calls.
         messages.append({"role": "user", "content": tool_results})
 
-    # Out of turns. Rather than throw the run away, ask for an answer from the
-    # abstracts already fetched, with tools switched off so it cannot search again.
+    # Out of turns: same treatment as running out of budget.
     stats["note"] = f"hit the {MAX_TURNS}-turn cap; answered from the abstracts already fetched"
     print(f"[{MAX_TURNS}-turn cap reached: asking for an answer from what has been fetched]")
-    messages.append({
-        "role": "user",
-        "content": "You have run out of search turns. Answer the question now, using only the abstracts you have already fetched.",
-    })
-    response = send(client, messages, stats, tool_choice={"type": "none"})
-    return answer_text(response), retrieved, stats
+    return final_answer(client, messages, stats), retrieved, stats
 
 
 def cited_pmids(text):
@@ -228,13 +253,13 @@ def report(answer, retrieved, stats):
     if invented:
         print(f"\nWARNING: cited but never fetched (possibly invented): {', '.join(invented)}")
 
-    cost = (stats["input_tokens"] * INPUT_PRICE_PER_MTOK + stats["output_tokens"] * OUTPUT_PRICE_PER_MTOK) / 1_000_000
+    cost = cost_usd(stats)
     print(
         f"\n[{stats['turns']} turns, {len(retrieved)} abstracts fetched, {len(verified)} cited, "
         f"{stats['input_tokens']:,} input + {stats['output_tokens']:,} output tokens, ~${cost:.3f}]"
     )
     if stats["fallback_ran"]:
-        print("[note: a fallback model served at least one turn; cost uses Opus 5 prices]")
+        print(f"[note: a fallback model served at least one turn; cost uses {MODEL} prices]")
     if stats["note"]:
         print(f"[note: {stats['note']}]")
 

@@ -175,3 +175,66 @@ Elwell & Schellman 1977 (PMID 911878) contains **no crystallography**. It is abs
 The run 2 answer wrote melting temperature as `T<sub>m</sub>` - an HTML subscript tag - and used Markdown headings and bold throughout. Nothing asked it to; the system prompt says nothing about formatting, so it defaulted to writing for a web page rather than a terminal.
 
 Harmless here, and I left it in the transcript rather than tidying it away. Worth knowing that an unspecified output format means the model picks one, and for a CLI the choice will usually be wrong.
+
+---
+
+## 2026-09-14: Run 3 - Sonnet 5 on the same question is 9.5x cheaper, not 2.5x
+
+**Category:** Cost (and the most useful cost lesson so far)
+
+Same question, same code, only `MODEL` changed from `claude-opus-5` to `claude-sonnet-5`. Sonnet 5's rate is 2.5x lower ($2/$10 per MTok against $5/$25), so I predicted ~$0.40. The actual bill was **$0.105**.
+
+| | Run 2, Opus 5 | Run 3, Sonnet 5 |
+|---|---|---|
+| Turns | 9 | 5 |
+| Searches | 12 | 4 |
+| Zero-result searches | 2 | 0 |
+| Abstracts fetched | 40 | 19 |
+| PMIDs cited | 40 | 18 |
+| Input tokens | 163,239 | 37,437 |
+| Output tokens | 7,121 | 2,964 |
+| Wall clock | 133 s | 50 s |
+| **Cost** | **$0.994** | **$0.105** |
+
+**Why the gap between 2.5x and 9.5x.** Rate is only one factor. The cheaper model also *did less*: four searches instead of twelve, and 19 abstracts instead of 40. Because every turn resends the whole conversation, the abstract count multiplies across the remaining turns, so fetching half as much on half as many turns compounds. Cost in an agentic loop is driven by behaviour at least as much as by the price list, which means you cannot predict it from the rate card - you have to measure.
+
+**What the money bought.** Opus 5 was more thorough: 40 papers against 18, and sections on helix-dipole electrostatics, long-range charge effects, buried hydroxyls, Gly->Ala/Xaa->Pro entropy arguments and site-96 saturation that Sonnet 5 never reached. Sonnet 5's answer is accurate but narrower. For a survey question, "$0.99 for twice the literature" is arguably the better deal; for repeated use it is 9.5x the bill. Both are defensible; the useful thing is having both numbers.
+
+**Still not obeyed:** `T4 lysozyme engineered disulfide bonds increase melting temperature Matsumura` - an author surname again, despite the tool description saying not to. It returned 2 matches, so it did no harm, but two runs on two different models have now both ignored that instruction. Advice in a tool description is a nudge, not a constraint.
+
+---
+
+## 2026-09-14: A cost cap belongs in the loop, not just in the console
+
+**Category:** Cost
+
+Added `MAX_COST_USD` (0.75). Before each API call the loop computes the running cost from the token counts the API has already reported, and if it is over budget it stops searching and takes the same "answer from the abstracts you already have" path as the turn cap.
+
+Three decisions worth being able to defend:
+
+1. **One formula, two users.** `cost_usd()` is shared by the budget check and the final report, so the number the loop stops on is the number printed. Two copies of that arithmetic would eventually disagree.
+2. **The final call is allowed to exceed the budget.** Refusing it would mean the money already spent bought nothing at all. The cap bounds the search, not the answer.
+3. **$0.75, not $0.30.** A $0.30 cap sounded prudent but would have cut off the known-good Opus 5 run at roughly turn 7 - the cap has to sit above the cost of a normal successful question, or it silently degrades every answer. Set from measurement, not from taste.
+
+The console-level monthly limit is still the real backstop: an in-code cap only governs runs that reach this code path.
+
+---
+
+## 2026-09-14: Run 3 attribution check - 4/4 correct, and the run 2 error did not recur
+
+**Category:** Plausible but wrong (a negative result, which is still a result)
+
+I re-fetched the four run-3 citations I had not already verified and compared them with the claims:
+
+| PMID | Claim | Verdict |
+|---|---|---|
+| 8566545 | T4L tolerates extended alanine substitution; internal residues matter most; largest cavities most destabilising; nonpolar ligands rebind them | Correct |
+| 10623513 | Small-to-large substitutions at Ala42/Ala98/Ala129 progressively destabilise; Ala129 much less so because of a pre-existing cavity | Correct, including the cavity explanation |
+| 7869383 | Only Ser117, Leu118, Leu121 matter (>1 kcal/mol); pairwise combinations slightly non-additive in the *favourable* direction | Correct, including the direction |
+| 1304882 | 21-142 disulfide raises Tm by 11 °C at pH 2, causes a 5.1° rigid-body domain rotation, and does not abolish hinge-bending | Correct - the abstract ends "enhances the stability of the protein without making the folded structure more rigid" |
+
+**The interesting part:** run 2's claim-splicing error (Elwell & Schellman 1977 cited for "high-resolution crystal structures" it contains none of) did **not** recur. Sonnet 5 cited that same paper only for Trp138->Tyr affecting stability and activity, via van 't Hoff analysis, which is exactly what it says.
+
+I would not conclude that the cheaper model is more careful with citations. It wrote a third as much text and made a third as many claims, so it had far fewer chances to overreach. The honest version is: **fewer claims, fewer errors, less coverage** - and one sample each is not a measurement.
+
+**Minor:** 19 abstracts fetched, 18 cited. One paper was read and paid for but never used. Not worth fixing, but it is where a cost saving would come from if fetches were tightened.
