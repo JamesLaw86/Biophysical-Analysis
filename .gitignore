@@ -1,2 +1,8 @@
 __pycache__
 .spyproject
+
+# Virtual environments
+.venv/
+
+# Secrets: API keys must never be committed
+.env
