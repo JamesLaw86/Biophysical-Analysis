@@ -165,3 +165,13 @@ Elwell & Schellman 1977 (PMID 911878) contains **no crystallography**. It is abs
 **The pattern: claim-splicing.** A compound sentence carries two PMIDs, the union of the two papers supports the sentence, but neither paper supports it alone. Every citation passes the validator, because every PMID really was fetched and really is related. Spotting it needs someone who knows that T4 lysozyme crystallography postdates 1977 - it is invisible to a token-level or retrieval-level check, and invisible to a reader who is not a structural biologist.
 
 **Not yet fixed.** Candidate approaches: ask for one citation per claim and split compound sentences; or a second validation pass that sends each sentence plus its cited abstracts back to the model and asks whether that abstract alone supports it. The second is a much better interview answer but costs another API call per sentence.
+
+---
+
+## 2026-09-14: The answer contains HTML in a plain-text CLI
+
+**Category:** Search terms / output (minor, but it shows up in the transcript)
+
+The run 2 answer wrote melting temperature as `T<sub>m</sub>` - an HTML subscript tag - and used Markdown headings and bold throughout. Nothing asked it to; the system prompt says nothing about formatting, so it defaulted to writing for a web page rather than a terminal.
+
+Harmless here, and I left it in the transcript rather than tidying it away. Worth knowing that an unspecified output format means the model picks one, and for a CLI the choice will usually be wrong.
