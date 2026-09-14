@@ -216,6 +216,8 @@ Three decisions worth being able to defend:
 2. **The final call is allowed to exceed the budget.** Refusing it would mean the money already spent bought nothing at all. The cap bounds the search, not the answer.
 3. **$0.75, not $0.30.** A $0.30 cap sounded prudent but would have cut off the known-good Opus 5 run at roughly turn 7 - the cap has to sit above the cost of a normal successful question, or it silently degrades every answer. Set from measurement, not from taste.
 
+**Revised once Sonnet 5 became the default (same day):** a normal question then measured $0.105, so $0.75 was 7x the expected cost and would only have caught a severe runaway. Tightened to **$0.30**, about 3x a normal question, which would still have let every run so far finish. The principle did not change; the number moved because the measurement did. Worth noting that a cost cap is only meaningful relative to a measured baseline - carried over unchanged from a more expensive model, it silently stops being a control.
+
 The console-level monthly limit is still the real backstop: an in-code cap only governs runs that reach this code path.
 
 ---

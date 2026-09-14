@@ -25,7 +25,7 @@ OUTPUT_PRICE_PER_MTOK = 10.00
 
 MAX_TURNS = 20         # hard stop, so a confused model can't loop forever
 MAX_RESULTS_CAP = 20   # limits how many abstracts one tool call can pull into the context
-MAX_COST_USD = 0.75    # stop searching once one question has cost this much
+MAX_COST_USD = 0.30    # stop searching once one question has cost this much (~3x a normal question)
 
 SYSTEM_PROMPT = """You answer questions about biological targets using the PubMed literature.
 

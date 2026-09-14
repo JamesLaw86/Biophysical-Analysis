@@ -42,8 +42,8 @@ On the run below, 18 PMIDs were cited and all 18 were verified.
 
 | Constant | Default | Why |
 |---|---|---|
-| `MODEL` | `claude-sonnet-5` | $2/$10 per million input/output tokens. `claude-opus-5` searches more thoroughly for about 9x the cost - see NOTES.md for a like-for-like comparison. |
-| `MAX_COST_USD` | `0.75` | Checked before each API call from the token counts the API has reported. Over budget, the agent stops searching and answers from the abstracts it already has. |
+| `MODEL` | `claude-sonnet-5` | $2/$10 per million input/output tokens. `claude-opus-5` searches more thoroughly for about 9x the cost - see NOTES.md for a like-for-like comparison. Raise `MAX_COST_USD` if you switch back, or the cap will cut the search short. |
+| `MAX_COST_USD` | `0.30` | Checked before each API call from the token counts the API has reported. Over budget, the agent stops searching and answers from the abstracts it already has. A normal question measures about $0.11, so this is roughly 3x headroom. |
 | `MAX_TURNS` | `20` | Hard stop, so a confused model cannot loop forever. |
 | `MAX_RESULTS_CAP` | `20` | Caps how many abstracts one tool call can pull into the conversation. |
 
